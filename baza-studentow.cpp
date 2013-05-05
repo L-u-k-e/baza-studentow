@@ -9,7 +9,7 @@ struct przedmiot {
 };
 
 struct ocena {
-	int wartosc;
+	string wartosc;
 	przedmiot* przedmiot;
 	ocena* nast;
 };
@@ -140,7 +140,7 @@ ocena* oc_pobierz(student* s, int nr) {
 	return NULL;
 }
 
-ocena* nowa_ocena(przedmiot* p, int wartosc) {
+ocena* nowa_ocena(przedmiot* p, string wartosc) {
 	if(p == NULL) return NULL;
 	ocena* o = new ocena;
 	o->wartosc = wartosc;
@@ -149,7 +149,7 @@ ocena* nowa_ocena(przedmiot* p, int wartosc) {
 	return o; // zwracamy adres do nowo utworzonej oceny
 }
 
-void dodaj_ocene(student* s, przedmiot* p, int wartosc) {
+void dodaj_ocene(student* s, przedmiot* p, string wartosc) {
 	if(s == NULL) return;
 	if(s->p_ocena == NULL) {
 		s->poprz_ocena = s->p_ocena = nowa_ocena(p, wartosc);
@@ -255,7 +255,8 @@ int main(int argc, char *argv[]) {
 				break;
 			case '6': // nowa ocena
 				{
-					int nr, wartosc;
+					int nr;
+					string wartosc;
 					st_wyswietl();
 					cout << "Podaj numer studenta, dla ktorego chcesz dodac nowa ocene: ";
 					cin >> nr;
@@ -266,7 +267,7 @@ int main(int argc, char *argv[]) {
 						cin >> nr;
 						przedmiot* p = prz_pobierz(nr);
 						if(p != NULL) {
-							cout << "Podaj wartosc oceny: ";
+							cout << "Wprowadz ocene: ";
 							cin >> wartosc;
 							dodaj_ocene(s, p, wartosc);
 							oc_wyswietl(s);
@@ -356,7 +357,7 @@ int main(int argc, char *argv[]) {
 				break;
 			case '9': // usuwanie oceny
 				{
-					int nr, wartosc;
+					int nr;
 					st_wyswietl();
 					cout << "Podaj numer studenta, ktorego ocene chcesz usunac: ";
 					cin >> nr;

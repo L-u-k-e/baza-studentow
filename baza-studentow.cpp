@@ -197,6 +197,9 @@ int main(int argc, char *argv[]) {
 
 		// Ratujemy sytuację, jeśli został wpisany nieodpowiedni znak
 		// i pomijamy wszystkie znaki, które "zostały" (np. \n po pobierniu intów):
+		if (cin.fail()) {
+			cin.get();
+		}
 		cin.clear();
 		cin.sync();
 

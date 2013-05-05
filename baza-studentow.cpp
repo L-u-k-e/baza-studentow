@@ -1,7 +1,5 @@
-// Baza studentów.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
+#include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -17,12 +15,12 @@ struct ocena {
 };
 
 struct student {
-	   string imie;
-	   string nazwisko;
-	   string album;
-	   ocena* p_ocena;
-	   ocena* poprz_ocena;
-	   student* nast;
+	string imie;
+	string nazwisko;
+	string album;
+	ocena* p_ocena;
+	ocena* poprz_ocena;
+	student* nast;
 };
 
 student* st_poczatek;

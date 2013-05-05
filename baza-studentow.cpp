@@ -194,12 +194,18 @@ int main(int argc, char *argv[]) {
 			 << "8. usuwanie przedmiotu\n"
 			 << "9. usuwanie oceny\n"
 			 << "q. wyjdz\n";
-		// Ratujemy sytuacjê, jeœli zosta³ wpisany nieodpowiedni znak
-		if (cin.fail()) {
-			cin.clear();
-			cin.get();
-		}
+
+		// Ratujemy sytuacjÄ™, jeÅ›li zostaÅ‚ wpisany nieodpowiedni znak
+		// i pomijamy wszystkie znaki, ktÃ³re "zostaÅ‚y" (np. \n po pobierniu intÃ³w):
+		cin.clear();
+		cin.sync();
+
 		cin >> wybor;
+
+		// j.w.
+		cin.clear();
+		cin.sync();
+
 		switch(wybor) {
 			case '1': // lista studentow
 				st_wyswietl();
@@ -210,11 +216,11 @@ int main(int argc, char *argv[]) {
 					cout << "--- DODAWANIE STUDENTA ---\n";
 					string imie, nazwisko, album;
 					cout << "Podaj imie studenta: ";
-					cin >> imie;
+					getline(cin, imie);
 					cout << "Podaj nazwisko studenta: ";
-					cin >> nazwisko;
+					getline(cin, nazwisko);
 					cout << "Podaj nr albumu studenta: ";
-					cin >> album;
+					getline(cin, album);
 					dodaj_studenta(imie, nazwisko, album);
 					st_wyswietl();
 				}
@@ -228,7 +234,7 @@ int main(int argc, char *argv[]) {
 					cout << "--- DODAWANIE PRZEDMIOTU ---\n";
 					string nazwa;
 					cout << "Podaj nazwe przedmiotu: ";
-					cin >> nazwa;
+					getline(cin, nazwa);
 					dodaj_przedmiot(nazwa);
 					prz_wyswietl();
 				}
@@ -279,18 +285,18 @@ int main(int argc, char *argv[]) {
 					cout << "Podaj numer studenta, ktorego chcesz usunac: ";
 					cin >> nr;
 					student* s = st_pobierz(nr);
-					student* poprz = st_pobierz(nr-1); // to mo¿na ³adniej...
+					student* poprz = st_pobierz(nr-1); // to moÅ¼na Å‚adniej...
 					if(s != NULL) {
 						if(s->p_ocena != NULL) {
 							int i = 1;
 							ocena* akt_ocena = s->p_ocena;
-							do { // usuwamy wszystkie oceny studenta - zwalniamy pamiêæ
+							do { // usuwamy wszystkie oceny studenta - zwalniamy pamiÄ™Ä‡
 								ocena* tmp = akt_ocena->nast;
 								delete akt_ocena;
 								akt_ocena = tmp;
 							} while(akt_ocena);
 						}
-						// usuwamy studenta - zwalniamy pamiêæ:
+						// usuwamy studenta - zwalniamy pamiÄ™Ä‡:
 						if(poprz != NULL) {
 							poprz->nast = s->nast;
 						} else {
@@ -332,7 +338,7 @@ int main(int argc, char *argv[]) {
 								s = s->nast;
 							} while(s);
 						}
-						// usuwamy studenta - zwalniamy pamiêæ:
+						// usuwamy studenta - zwalniamy pamiÄ™Ä‡:
 						if(poprz != NULL) {
 							poprz->nast = p->nast;
 						} else {

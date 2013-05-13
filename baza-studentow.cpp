@@ -1,4 +1,7 @@
+#include <cstdlib>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 using namespace std;
@@ -10,7 +13,7 @@ struct przedmiot {
 
 struct ocena {
 	string wartosc;
-	przedmiot* przedmiot;
+	przedmiot* przed;
 	ocena* nast;
 };
 
@@ -27,6 +30,10 @@ student* st_poczatek;
 student* st_poprz;
 przedmiot* prz_poczatek;
 przedmiot* prz_poprz;
+
+const char delim_1 = '~';
+const char delim_2 = '°';
+const char nazwa_pliku[] = "baza.db";
 
 void st_wyswietl(student* s = st_poczatek) {
 	system("cls");
@@ -47,12 +54,13 @@ student* st_pobierz(int nr) {
 	if(nr < 1) return NULL;
 	student* s = st_poczatek;
 	int i = 1;
-	do {
+	while(s) {
 		if(i++ == nr) return s;
 		s = s->nast;
-	} while(s);
+	}
 	return NULL;
 }
+
 student* nowy_student(string imie, string nazwisko, string album) {
 	student* s = new student;
 	s->imie = imie;
@@ -71,6 +79,7 @@ void dodaj_studenta(string imie, string nazwisko, string album) {
 		st_poprz = st_poprz->nast = nowy_student(imie, nazwisko, album);
 	}
 }
+
 void prz_wyswietl(przedmiot* p = prz_poczatek) {
 	system("cls");
 	cout << "--- LISTA PRZEDMIOTOW ---\n";
@@ -90,10 +99,10 @@ przedmiot* prz_pobierz(int nr) {
 	if(nr < 1) return NULL;
 	przedmiot* p = prz_poczatek;
 	int i = 1;
-	do {
+	while(p) {
 		if(i++ == nr) return p;
 		p = p->nast;
-	} while(p);
+	}
 	return NULL;
 }
 
@@ -123,7 +132,7 @@ void oc_wyswietl(student* s) {
 	int i = 1;
 	ocena* akt_ocena = s->p_ocena;
 	do {
-		cout << i++ << ". " << akt_ocena->przedmiot->nazwa << " - " << akt_ocena->wartosc << "\n";
+		cout << i++ << ". " << akt_ocena->przed->nazwa << " - " << akt_ocena->wartosc << "\n";
 		akt_ocena = akt_ocena->nast;
 	} while(akt_ocena);
 	cout << "\n";
@@ -144,7 +153,7 @@ ocena* nowa_ocena(przedmiot* p, string wartosc) {
 	if(p == NULL) return NULL;
 	ocena* o = new ocena;
 	o->wartosc = wartosc;
-	o->przedmiot = p;
+	o->przed = p;
 	o->nast = NULL;
 	return o; // zwracamy adres do nowo utworzonej oceny
 }
@@ -180,7 +189,97 @@ void usun_ocene(student* s, ocena* o) {
 	} while(akt_ocena);
 }
 
+void zapisz() {
+	ofstream plik(nazwa_pliku);
+	if(plik) {
+		// zapisujemy przedmioty
+		plik << "# przedmioty\n";
+		przedmiot* p = prz_poczatek;
+		while(p) {
+			plik << p->nazwa;
+			if(p = p->nast) plik << delim_1;
+		}
+		plik << "\n";
+		// zapisujemy studentów, przy okazji zbieramy oceny
+		plik << "# studenci\n";
+		stringstream oc_dane;
+		student* s = st_poczatek;
+		int nr_studenta = 1;
+		while(s) {
+			// studenci:
+			plik << s->imie << delim_2 << s->nazwisko << delim_2 << s->album;
+			// oceny:
+			ocena* akt_ocena = s->p_ocena;
+			while(akt_ocena) {
+				// wykorzystujemy przedmiot* p zadeklarowany wyżej:
+				przedmiot* p = prz_poczatek;
+				int nr_przedmiotu = 0, temp_przed_nr = 1;
+				while(p) {
+					if(p == akt_ocena->przed) {
+						nr_przedmiotu = temp_przed_nr;
+						break;
+					}
+					p = p->nast;
+					temp_przed_nr++;
+				}
+				oc_dane << nr_studenta << delim_2 << nr_przedmiotu << delim_2 << akt_ocena->wartosc << delim_1;
+				akt_ocena = akt_ocena->nast;
+			}
+			// następny student
+			if(s = s->nast) plik << delim_1;
+			nr_studenta++;
+		}
+		plik << "\n";
+		// zapis ocen:
+		plik << "# oceny\n" << oc_dane.str().substr(0, oc_dane.str().size() - 1);
+	}
+}
+
+void wczytaj() {
+	ifstream plik(nazwa_pliku);
+	if(plik) {
+		istringstream strumien, strumien2; // używane do rozbicia ciągu za pomocą getline()
+		// pobieramy przedmioty
+		string linia, wpis, rekord; // wpis - zawiera opis jednej struktury
+		getline(plik, linia, '\n'); // pomijamy linię (można zrobić lepiej)
+		getline(plik, linia, '\n'); // pobieramy linię z przedmiotami
+		strumien.str(linia);
+		while(getline(strumien, wpis, delim_1) && wpis.length()) {
+			dodaj_przedmiot(wpis);
+		}
+		// pobieramy studentów
+		getline(plik, linia, '\n'); // pomijamy linię (można zrobić lepiej)
+		getline(plik, linia, '\n'); // pobieramy linię ze studentami
+		strumien.clear(); // czyścimy flagi strumienia
+		strumien.str(linia);
+		while(getline(strumien, wpis, delim_1) && wpis.length()) {
+			strumien2.clear(); // czyścimy flagi strumienia
+			strumien2.str(wpis);
+			string imie, nazwisko, album;
+			getline(strumien2, imie, delim_2);
+			getline(strumien2, nazwisko, delim_2);
+			getline(strumien2, album, delim_2);
+			dodaj_studenta(imie, nazwisko, album);
+		}
+		// pobieramy oceny
+		getline(plik, linia, '\n'); // pomijamy linię (można zrobić lepiej)
+		getline(plik, linia, '\n'); // pobieramy linię z ocenami
+		strumien.clear(); // czyścimy flagi strumienia
+		strumien.str(linia);
+		while(getline(strumien, wpis, delim_1) && wpis.length()) {
+			strumien2.clear(); // czyścimy flagi strumienia
+			strumien2.str(wpis);
+			string nr_studenta, nr_przedmiotu, wartosc;
+			getline(strumien2, nr_studenta, delim_2);
+			getline(strumien2, nr_przedmiotu, delim_2);
+			getline(strumien2, wartosc, delim_2);
+			dodaj_ocene(st_pobierz(atoi(nr_studenta.c_str())), prz_pobierz(atoi(nr_przedmiotu.c_str())), wartosc);
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
+	wczytaj();
 	char wybor;
 	do {
 		cout << "--- MENU ---\n"
@@ -193,7 +292,8 @@ int main(int argc, char *argv[]) {
 			 << "7. usuwanie studenta\n"
 			 << "8. usuwanie przedmiotu\n"
 			 << "9. usuwanie oceny\n"
-			 << "q. wyjdz\n";
+			 << "q. wyjdz\n\n"
+			 << "Wybierz opcje: ";
 
 		// Ratujemy sytuację, jeśli został wpisany nieodpowiedni znak
 		// i pomijamy wszystkie znaki, które "zostały" (np. \n po pobierniu intów):
@@ -333,7 +433,7 @@ int main(int argc, char *argv[]) {
 									ocena* akt_ocena = s->p_ocena;
 									do {
 										ocena* tmp = akt_ocena->nast;
-										if(akt_ocena->przedmiot == p) {
+										if(akt_ocena->przed == p) {
 											usun_ocene(s, akt_ocena);
 										}
 										akt_ocena = tmp;
@@ -383,5 +483,6 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	} while (wybor != 'q');
+	zapisz();
 	return EXIT_SUCCESS;
 }

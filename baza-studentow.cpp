@@ -8,31 +8,31 @@ using namespace std;
 
 struct przedmiot {
 	string nazwa;
-	przedmiot* nast;
+	przedmiot* nast; // kolejny przedmiot
 };
 
 struct ocena {
 	string wartosc;
-	przedmiot* przed;
-	ocena* nast;
+	przedmiot* przed; // przedmiot, którego dotyczy ocena
+	ocena* nast; // kolejna ocena
 };
 
 struct student {
 	string imie;
 	string nazwisko;
 	string album;
-	ocena* p_ocena;
-	ocena* poprz_ocena;
+	ocena* p_ocena; // pierwsza ocena
+	ocena* poprz_ocena; // ostatnio dodana ocena
 	student* nast;
 };
 
-student* st_poczatek;
-student* st_poprz;
-przedmiot* prz_poczatek;
-przedmiot* prz_poprz;
+student* st_poczatek; // pierwszy student na liście
+student* st_poprz; // ostatnio dodany student
+przedmiot* prz_poczatek; // pierwszy przedmiot na liście
+przedmiot* prz_poprz; // ostatnio dodany przedmiot
 
-const char delim_1 = '~';
-const char delim_2 = '°';
+const char delim_1 = '~'; // rozdziela dane o poszczególnych strukturach
+const char delim_2 = '°'; // rozdziela dane o poszczególnych elementach struktury
 const char nazwa_pliku[] = "baza.db";
 
 void st_wyswietl(student* s = st_poczatek) {

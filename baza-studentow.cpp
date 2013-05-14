@@ -232,6 +232,7 @@ void zapisz() {
 		plik << "\n";
 		// zapis ocen:
 		plik << "# oceny\n" << oc_dane.str().substr(0, oc_dane.str().size() - 1);
+		plik.close();
 	}
 }
 
@@ -275,6 +276,7 @@ void wczytaj() {
 			getline(strumien2, wartosc, delim_2);
 			dodaj_ocene(st_pobierz(atoi(nr_studenta.c_str())), prz_pobierz(atoi(nr_przedmiotu.c_str())), wartosc);
 		}
+		plik.close();
 	}
 }
 
